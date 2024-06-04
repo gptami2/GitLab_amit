@@ -1,79 +1,25 @@
-name: SampleTestProj CI
+name: CI
 
-on:# triggesrs the workflow on push or pull req events but only for the master branch
-
+on:
   push:
-    
-    branches: [ "master"]
-  pull_request:
-    
-    branches: [ "master"]
-  #schedule:
-  # - cron: '20 23 * * *'
-
-  # workflow_dispatch:
-
-env:
-  # Path to the solution file relative to the root of the project.
-  #DEV_SOLUTION_FILE_PATH: ./dev/SourceCode/TPM_B2C.sln
-  #DEV_SOLUTION_FILE_PATH: ./Share-RC-New/SourceCode/TPM_B2C.sln
- 
-  BUILD_CONFIGURATION: Release
-  #DEPLO YMENT_PATH: E:/DeploymentFiles
+    branches:
+      - master
 
 jobs:
-  checkout_dev:
-
-    runs-on: self-hosted
-    #if: ${{ github.ref == 'refs/heads/Share-RC-New' }}
+  build:
+    runs-on: ubuntu-latest
+    
     steps:
-    - uses: actions/checkout@v3
-      with: 
-        #path: Share-RC-New
-
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
       with:
-        dotnet-version: 6.0.x
-  Restore:
-     runs-on: self-hosted
-     #if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-     needs: [checkout_dev]
-     steps:
-     - name: Restore dependencies
-      # run: dotnet restore ${{env.DEV_SOLUTION_FILE_PATH}}
-  Build:
-     runs-on: self-hosted
-     #if: ${{ always() && contains(join(needs.*.result, ','), 'success') }}
-     needs: [Restore]
-     steps:
-     - name: Build Only One Line Script
-       #run: dotnet build ${{env.DEV_SOLUTION_FILE_PATH}} -c Release
-       run: echo Hello, World!
-  Test:
-     runs-on: self-hosted
-     needs: Build
-     steps:
-     - name: Test
-       run: dotnet test ${{env.DEV_SOLUTION_FILE_PATH}} --no-build --verbosity normal
-  Publish:
-    runs-on: self-hosted
-    needs: Test
-    steps:
-     - name: Publish
-       run: dotnet publish ${{env.DEV_SOLUTION_FILE_PATH}} -c Release
-
-  Deployment_RC:
-    runs-on: self-hosted
-    needs: Publish
-    defaults:
-      run:
-        shell: cmd
-    steps:
-     - name: Run deployment Dev bat script on cmd
-       run: |
-              echo %PATH%  
-              #call ${{env.DEPLOYMENT_PATH}}/partnersolution_b2c/partnersolution_b2c_Admin_RC.bat
-              #call ${{env.DEPLOYMENT_PATH}}/partnersolution_b2c/partnersolution_b2c_Api_RC.bat
-              #call ${{env.DEPLOYMENT_PATH}}/partnersolution_b2c/partnersolution_b2c_BE_RC.bat    
+        node-version: '14'
         
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Build project
+      run: npm run build
